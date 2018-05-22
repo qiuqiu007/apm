@@ -16,6 +16,7 @@ export default {
     min-height: 100%;
     padding: 0;
     margin: 0;
+    background-color: #061630;
   }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
