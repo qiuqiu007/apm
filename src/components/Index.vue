@@ -2,24 +2,25 @@
   <div id="index-page">
     <div class="page-body">
       <div class="page-bg">
-        <img src="../assets/img/apm@2x.png" />
+        <img src="../assets/img/apm2@2x.png" />
       </div>
 
       <div class="page-content">
         <div class="select-p">
           <div class="input-p">
             <img src="../assets/img/btn.png" class="arrow"/>
-            <select v-model="country" @change="changeStore" placeholder="国家">
-              <option v-for="option in options" v-bind:value="option.id">
+            <select v-model="country" @change="changeCountry">
+              <option value='' disabled  style='display:none;'>国家</option>
+              <option v-for="option in countryOptions" :value="option.id">
                 {{ option.name }}
               </option>
             </select>
           </div>
           <div class="input-p">
             <img src="../assets/img/btn.png" class="arrow"/>
-            <select v-model="city" @change="changeStore" placeholder="城市">
+            <select v-model="city" @change="changeCity">
               <option value='' disabled  style='display:none;'>城市</option>
-              <option v-for="option in options" v-bind:value="option.id">
+              <option v-for="option in cityOptions" v-bind:value="option.id">
                 {{ option.name }}
               </option>
             </select>
@@ -35,17 +36,19 @@
             infinite-scroll-disabled="loading"
             infinite-scroll-distance="10">
             <li v-for="item in list">
-              <img src="../assets/img/adres-icon@2x.png" class="address-icon"/>
-              <div class="store-name">
+              <img src="../assets/img/adres-icon@2x.png" class="address-icon" @click="openWxMap(item)"/>
+              <div class="store-name" @click="openWxMap(item)">
                 <span class="store-item-name">{{item.name}}</span>
-                <span  class="store-distance">13.5公里</span>
+                <span  class="store-distance" v-if="item.distance">{{item.distance}}</span>
               </div>
-              <div class="address">
+              <div class="address" @click="openWxMap(item)">
                 {{item.address}}
               </div>
-              <div class="phone">
-                <a :href="'wtai://wp//mc;'+item.phone.replace(/[^0-9]/ig,'')">{{item.phone}}</a>
-              </div>
+              <a :href="'tel://'+item.phone.replace(/[^0-9]/ig,'')">
+                <div class="phone">
+                  {{item.phone}}
+                </div>
+              </a>
             </li>
           </ul>
          <div class="no-more-data" v-show="noMore">加载完成</div>
@@ -57,16 +60,20 @@
 
 <script>
   import { MessageBox} from 'mint-ui';
+  import wx from 'weixin-js-sdk'
 export default {
   name: 'Index',
   data () {
     return {
-      country: '-1',
+      country: '',
       city:'',
-      options: [],
+      countryOptions: [],
+      cityOptions: [],
       loading:true,
       pageNum:1,
       list:[],
+      latitude:'',
+      longitude:'',
       noMore:false
     }
   },
@@ -74,21 +81,27 @@ export default {
 
   },
   mounted(){
-    this.getOption();
+    this.getWxConfig();
+    this.getCountryOption();
     this.loading=false;
   },
   methods:{
-    getOption(){
+    getCountryOption(){
       let _this=this;
-      this.$http.get('/apm-monaco/h5/shop/cityList').then(function(res){
+      this.$http.get('/apm-monaco/h5/shop/countryList').then(function(res){
         if (res.data&&res.data.length>0){
-          _this.options=res.data;
+          _this.countryOptions=res.data;
         }
-        let option={
-          id: "-1",
-          name: "所有店铺"
-        };
-        _this.options.unshift(option);
+      }).catch(function(err){
+        console.log(err)
+      });
+    },
+    getCityOption(){
+      let _this=this;
+      this.$http.get('/apm-monaco/h5/shop/cityList?countryId='+_this.country).then(function(res){
+        if (res.data&&res.data.length>0){
+          _this.cityOptions=res.data;
+        }
       }).catch(function(err){
         console.log(err)
       });
@@ -96,19 +109,22 @@ export default {
     loadMore(){
       this.loading = true;
       let param='';
-      if(this.country=='-1'){
+      if(this.country===''){
         param='pageNum='+this.pageNum
+      }else if(this.city===''){
+        param='countryId='+this.country+'&pageNum='+this.pageNum
       }else {
-        param='cityId='+this.country+'&pageNum='+this.pageNum
+        param='countryId='+this.country+'&cityId='+this.city+'&lat='+this.latitude+'&lng='+this.longitude+'&pageNum='+this.pageNum
       }
       let _this=this;
       this.$http.get('/apm-monaco/h5/shop/shopList?'+param).then(function(res){
         _this.pageNum++;
         if (res.data.list&&res.data.list.length>0){
           let storeList=res.data.list;
-          for(let i=0;i<storeList.length;i++){
+          _this.list=_this.list.concat(storeList);
+          /*for(let i=0;i<storeList.length;i++){
             _this.list.push(storeList[i]);
-          }
+          }*/
         }
         _this.loading =res.data.end?true : false;
         _this.noMore =res.data.end?true : false;
@@ -116,18 +132,123 @@ export default {
         console.log(err)
       });
     },
-    changeStore(){
-      console.log(this.country);
+    changeCountry(){
+      this.pageNum=1;
+      this.list=[];
+      this.city='';
+      this.cityOptions=[];
+      this.loadMore();
+      this.getCityOption();
+    },
+    changeCity(){
       this.pageNum=1;
       this.list=[];
       this.loadMore();
-    }
+    },
+    getWxConfig(){
+      let _this=this;
+      this.$http.get('/apm-monaco/h5/config/authConfig').then(function(res){
+        let data=res;
+        if (res.data){
+          wx.config({
+            debug: false,
+            appId: 'wx38eaa9f2e9b4fb79',
+            timestamp: data.timestamp,
+            nonceStr: data.nonceStr,
+            signature: data.signature,
+            jsApiList: [
+              'checkJsApi',
+              'onMenuShareTimeline',
+              'onMenuShareAppMessage',
+              'onMenuShareQQ',
+              'onMenuShareWeibo',
+              'onMenuShareQZone',
+              'hideMenuItems',
+              'showMenuItems',
+              'hideAllNonBaseMenuItem',
+              'showAllNonBaseMenuItem',
+              'translateVoice',
+              'startRecord',
+              'stopRecord',
+              'onVoiceRecordEnd',
+              'playVoice',
+              'onVoicePlayEnd',
+              'pauseVoice',
+              'stopVoice',
+              'uploadVoice',
+              'downloadVoice',
+              'chooseImage',
+              'previewImage',
+              'uploadImage',
+              'downloadImage',
+              'getNetworkType',
+              'openLocation',
+              'getLocation',
+              'hideOptionMenu',
+              'showOptionMenu',
+              'closeWindow',
+              'scanQRCode',
+              'chooseWXPay',
+              'openProductSpecificView',
+              'addCard',
+              'chooseCard',
+              'openCard'
+            ]
+          });
+          wx.error(function (res) {
+            MessageBox({
+              title: '提示',
+              message: res.errMsg,
+              confirmButtonClass: 'green-confirm-btn'
+            });
+          });
+          wx.ready(function(){
+            wx.getLocation({
+              type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+              success: function (res) {
+                _this.latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                _this.longitude = res.longitude ; // 经度，浮点数，范围为180 ~ -180。
+              },
+              fail:function (res) {
+                MessageBox({
+                  title: '提示',
+                  message: res.errMsg,
+                  confirmButtonClass: 'green-confirm-btn'
+                });
+              },
+              cancel: function (res) {
+                MessageBox({
+                  title: '提示',
+                  message: '您拒绝授权获取地理位置!',
+                  confirmButtonClass: 'green-confirm-btn'
+                });
+              }
+            });
+          });
+        }
+      }).catch(function(err){
+        console.log(err)
+      });
+    },
+    openWxMap(item){
+      wx.openLocation({
+        latitude: item.latitude,
+        longitude: item.longitude,
+        name: item.name,
+        address: item.address,
+        scale: 14,
+        infoUrl: 'http://weixin.qq.com'
+      });
+    },
   }
 }
 </script>
 
 <!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
+  a{
+    text-decoration: none;
+  }
   #index-page{
     min-height: 100%;
     width: 7.5rem;
