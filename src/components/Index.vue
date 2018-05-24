@@ -10,7 +10,7 @@
           <div class="input-p">
             <img src="../assets/img/btn.png" class="arrow"/>
             <select v-model="country" @change="changeCountry">
-              <option value='' disabled  style='display:none;'>国家</option>
+              <option value=''>国家</option>
               <option v-for="option in countryOptions" :value="option.id">
                 {{ option.name }}
               </option>
@@ -19,7 +19,7 @@
           <div class="input-p">
             <img src="../assets/img/btn.png" class="arrow"/>
             <select v-model="city" @change="changeCity">
-              <option value='' disabled  style='display:none;'>城市</option>
+              <option value=''>城市</option>
               <option v-for="option in cityOptions" v-bind:value="option.id">
                 {{ option.name }}
               </option>
@@ -39,7 +39,7 @@
               <img src="../assets/img/adres-icon@2x.png" class="address-icon" @click="openWxMap(item)"/>
               <div class="store-name" @click="openWxMap(item)">
                 <span class="store-item-name">{{item.name}}</span>
-                <span  class="store-distance" v-if="item.distance">{{item.distance}}</span>
+                <span  class="store-distance" v-if="item.distance">{{item.distance}}公里</span>
               </div>
               <div class="address" @click="openWxMap(item)">
                 {{item.address}}
@@ -74,7 +74,8 @@ export default {
       list:[],
       latitude:'',
       longitude:'',
-      noMore:false
+      noMore:false,
+      canGetPosition:false,
     }
   },
   watch:{
@@ -83,7 +84,7 @@ export default {
   mounted(){
     this.getWxConfig();
     this.getCountryOption();
-    this.loading=false;
+    this.getCityOption();
   },
   methods:{
     getCountryOption(){
@@ -98,7 +99,14 @@ export default {
     },
     getCityOption(){
       let _this=this;
-      this.$http.get('/apm-monaco/h5/shop/cityList?countryId='+_this.country).then(function(res){
+      let postUrl='';
+      if(this.country===''){
+        postUrl='/apm-monaco/h5/shop/cityList'
+      }
+      else {
+        postUrl='/apm-monaco/h5/shop/cityList?countryId='+_this.country
+      }
+      this.$http.get(postUrl).then(function(res){
         if (res.data&&res.data.length>0){
           _this.cityOptions=res.data;
         }
@@ -109,12 +117,12 @@ export default {
     loadMore(){
       this.loading = true;
       let param='';
-      if(this.country===''){
-        param='pageNum='+this.pageNum
-      }else if(this.city===''){
-        param='countryId='+this.country+'&pageNum='+this.pageNum
+      if(this.country===''&&this.city===''){
+        param='pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude
+      }else if(this.country!==''&&this.city===''){
+        param='countryId='+this.country+'&pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude
       }else {
-        param='countryId='+this.country+'&cityId='+this.city+'&lat='+this.latitude+'&lng='+this.longitude+'&pageNum='+this.pageNum
+        param='cityId='+this.city+'&lat='+this.latitude+'&lng='+this.longitude+'&pageNum='+this.pageNum
       }
       let _this=this;
       this.$http.get('/apm-monaco/h5/shop/shopList?'+param).then(function(res){
@@ -122,9 +130,6 @@ export default {
         if (res.data.list&&res.data.list.length>0){
           let storeList=res.data.list;
           _this.list=_this.list.concat(storeList);
-          /*for(let i=0;i<storeList.length;i++){
-            _this.list.push(storeList[i]);
-          }*/
         }
         _this.loading =res.data.end?true : false;
         _this.noMore =res.data.end?true : false;
@@ -147,93 +152,145 @@ export default {
     },
     getWxConfig(){
       let _this=this;
+      debugger;
       this.$http.get('/apm-monaco/h5/config/authConfig').then(function(res){
         let data=res;
-        if (res.data){
-          wx.config({
-            debug: false,
-            appId: 'wx38eaa9f2e9b4fb79',
-            timestamp: data.timestamp,
-            nonceStr: data.nonceStr,
-            signature: data.signature,
-            jsApiList: [
-              'checkJsApi',
-              'onMenuShareTimeline',
-              'onMenuShareAppMessage',
-              'onMenuShareQQ',
-              'onMenuShareWeibo',
-              'onMenuShareQZone',
-              'hideMenuItems',
-              'showMenuItems',
-              'hideAllNonBaseMenuItem',
-              'showAllNonBaseMenuItem',
-              'translateVoice',
-              'startRecord',
-              'stopRecord',
-              'onVoiceRecordEnd',
-              'playVoice',
-              'onVoicePlayEnd',
-              'pauseVoice',
-              'stopVoice',
-              'uploadVoice',
-              'downloadVoice',
-              'chooseImage',
-              'previewImage',
-              'uploadImage',
-              'downloadImage',
-              'getNetworkType',
-              'openLocation',
-              'getLocation',
-              'hideOptionMenu',
-              'showOptionMenu',
-              'closeWindow',
-              'scanQRCode',
-              'chooseWXPay',
-              'openProductSpecificView',
-              'addCard',
-              'chooseCard',
-              'openCard'
-            ]
+        debugger;
+        wx.config({
+          debug: false,
+          appId: data.appId,
+          timestamp: data.timestamp,
+          nonceStr: data.nonceStr,
+          signature: data.signature,
+          jsApiList: [
+            'checkJsApi',
+            'onMenuShareTimeline',
+            'onMenuShareAppMessage',
+            'onMenuShareQQ',
+            'onMenuShareWeibo',
+            'onMenuShareQZone',
+            'hideMenuItems',
+            'showMenuItems',
+            'hideAllNonBaseMenuItem',
+            'showAllNonBaseMenuItem',
+            'translateVoice',
+            'startRecord',
+            'stopRecord',
+            'onVoiceRecordEnd',
+            'playVoice',
+            'onVoicePlayEnd',
+            'pauseVoice',
+            'stopVoice',
+            'uploadVoice',
+            'downloadVoice',
+            'chooseImage',
+            'previewImage',
+            'uploadImage',
+            'downloadImage',
+            'getNetworkType',
+            'openLocation',
+            'getLocation',
+            'hideOptionMenu',
+            'showOptionMenu',
+            'closeWindow',
+            'scanQRCode',
+            'chooseWXPay',
+            'openProductSpecificView',
+            'addCard',
+            'chooseCard',
+            'openCard'
+          ]
+        });
+        console.log(wx.config);
+        wx.error(function (res) {
+          MessageBox({
+            title: '提示',
+            message: res.errMsg,
+            confirmButtonClass: 'green-confirm-btn'
           });
-          wx.error(function (res) {
-            MessageBox({
-              title: '提示',
-              message: res.errMsg,
-              confirmButtonClass: 'green-confirm-btn'
-            });
+        });
+        /*_this.loading=false;*/
+        wx.ready(function(){
+          wx.onMenuShareTimeline({
+            title: 'APM', // 分享标题
+            desc: '分享描述', // 分享描述
+            link: 'http://demo.code41.me/shop/', // 分享链接
+            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
+            success: function() {
+            },
+            cancel: function() {
+            }
           });
-          wx.ready(function(){
-            wx.getLocation({
-              type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
-              success: function (res) {
-                _this.latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
-                _this.longitude = res.longitude ; // 经度，浮点数，范围为180 ~ -180。
-              },
-              fail:function (res) {
-                MessageBox({
-                  title: '提示',
-                  message: res.errMsg,
-                  confirmButtonClass: 'green-confirm-btn'
-                });
-              },
-              cancel: function (res) {
-                MessageBox({
-                  title: '提示',
-                  message: '您拒绝授权获取地理位置!',
-                  confirmButtonClass: 'green-confirm-btn'
-                });
-              }
-            });
+          //微信分享菜单测试
+          wx.onMenuShareAppMessage({
+            title: 'APM', // 分享标题
+            desc: '分享描述', // 分享描述
+            link: 'http://demo.code41.me/shop/', // 分享链接
+            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
+            success: function() {
+            },
+            cancel: function() {
+            }
           });
-        }
+
+          wx.onMenuShareQQ({
+            title: 'APM', // 分享标题
+            desc: '分享描述', // 分享描述
+            link: 'http://demo.code41.me/shop/', // 分享链接
+            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
+            success: function() {
+            },
+            cancel: function() {
+            }
+          });
+          wx.onMenuShareWeibo({
+            title: 'APM', // 分享标题
+            desc: '分享描述', // 分享描述
+            link: 'http://demo.code41.me/shop/', // 分享链接
+            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
+            success: function() {
+            },
+            cancel: function() {
+            }
+          });
+          wx.onMenuShareQZone({
+            title: 'APM', // 分享标题
+            desc: '分享描述', // 分享描述
+            link: 'http://demo.code41.me/shop/', // 分享链接
+            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
+            success: function() {
+            },
+            cancel: function() {
+            }
+          });
+
+          wx.getLocation({
+            type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+            success: function (res) {
+              _this.loading=false;
+              _this.latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+              _this.longitude = res.longitude ; // 经度，浮点数，范围为180 ~ -180。
+            },
+            cancel: function (res) {
+              _this.loading=false;
+              MessageBox({
+                title: '提示',
+                message: '您拒绝授权获取地理位置!',
+                confirmButtonClass: 'green-confirm-btn'
+              });
+            }
+          });
+        });
       }).catch(function(err){
         console.log(err)
       });
     },
     openWxMap(item){
+      debugger;
+      console.log(item);
       wx.openLocation({
-        latitude: item.latitude,
-        longitude: item.longitude,
+        latitude: parseFloat(item.latitude),
+        longitude: parseFloat(item.longitude),
         name: item.name,
         address: item.address,
         scale: 14,
@@ -345,7 +402,7 @@ export default {
     line-height: 0.5rem;
   }
   .store-name .store-item-name{
-    width: 3.85rem;
+    width: 3.55rem;
     display: inline-block;
     white-space: nowrap;
     text-overflow: ellipsis;
