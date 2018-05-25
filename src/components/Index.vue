@@ -152,10 +152,8 @@ export default {
     },
     getWxConfig(){
       let _this=this;
-      debugger;
       this.$http.get('/apm-monaco/h5/config/authConfig').then(function(res){
         let data=res;
-        debugger;
         wx.config({
           debug: false,
           appId: data.appId,
@@ -211,59 +209,6 @@ export default {
         });
         /*_this.loading=false;*/
         wx.ready(function(){
-          wx.onMenuShareTimeline({
-            title: 'APM', // 分享标题
-            desc: '分享描述', // 分享描述
-            link: 'http://demo.code41.me/shop/', // 分享链接
-            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
-            success: function() {
-            },
-            cancel: function() {
-            }
-          });
-          //微信分享菜单测试
-          wx.onMenuShareAppMessage({
-            title: 'APM', // 分享标题
-            desc: '分享描述', // 分享描述
-            link: 'http://demo.code41.me/shop/', // 分享链接
-            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
-            success: function() {
-            },
-            cancel: function() {
-            }
-          });
-
-          wx.onMenuShareQQ({
-            title: 'APM', // 分享标题
-            desc: '分享描述', // 分享描述
-            link: 'http://demo.code41.me/shop/', // 分享链接
-            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
-            success: function() {
-            },
-            cancel: function() {
-            }
-          });
-          wx.onMenuShareWeibo({
-            title: 'APM', // 分享标题
-            desc: '分享描述', // 分享描述
-            link: 'http://demo.code41.me/shop/', // 分享链接
-            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
-            success: function() {
-            },
-            cancel: function() {
-            }
-          });
-          wx.onMenuShareQZone({
-            title: 'APM', // 分享标题
-            desc: '分享描述', // 分享描述
-            link: 'http://demo.code41.me/shop/', // 分享链接
-            imgUrl: 'http://dev-1255936160.cos.ap-beijing.myqcloud.com/resources/test.jpg', // 分享图标
-            success: function() {
-            },
-            cancel: function() {
-            }
-          });
-
           wx.getLocation({
             type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
             success: function (res) {
@@ -280,13 +225,68 @@ export default {
               });
             }
           });
+          //微信分享
+          let shareImg=sessionStorage.getItem('shoplist_share_img');
+          let shareDesc=sessionStorage.getItem('shoplist_share_desc');
+          let shareTitle=sessionStorage.getItem('shoplist_share_title');
+          if(shareImg&&shareDesc&&shareTitle){
+            wx.onMenuShareTimeline({
+              title: shareTitle, // 分享标题
+              desc: shareDesc, // 分享描述
+              link: 'http://demo.code41.me/shop/', // 分享链接
+              imgUrl: shareImg, // 分享图标
+              success: function() {
+              },
+              cancel: function() {
+              }
+            });
+            wx.onMenuShareAppMessage({
+              title: shareTitle, // 分享标题
+              desc: shareDesc, // 分享描述
+              link: 'http://demo.code41.me/shop/', // 分享链接
+              imgUrl: shareImg, // 分享图标
+              success: function() {
+              },
+              cancel: function() {
+              }
+            });
+            wx.onMenuShareQQ({
+              title: shareTitle, // 分享标题
+              desc: shareDesc, // 分享描述
+              link: 'http://demo.code41.me/shop/', // 分享链接
+              imgUrl: shareImg, // 分享图标
+              success: function() {
+              },
+              cancel: function() {
+              }
+            });
+            wx.onMenuShareWeibo({
+              title: shareTitle, // 分享标题
+              desc: shareDesc, // 分享描述
+              link: 'http://demo.code41.me/shop/', // 分享链接
+              imgUrl: shareImg, // 分享图标
+              success: function() {
+              },
+              cancel: function() {
+              }
+            });
+            wx.onMenuShareQZone({
+              title: shareTitle, // 分享标题
+              desc: shareDesc, // 分享描述
+              link: 'http://demo.code41.me/shop/', // 分享链接
+              imgUrl: shareImg, // 分享图标
+              success: function() {
+              },
+              cancel: function() {
+              }
+            });
+          }
         });
       }).catch(function(err){
         console.log(err)
       });
     },
     openWxMap(item){
-      debugger;
       console.log(item);
       wx.openLocation({
         latitude: parseFloat(item.latitude),

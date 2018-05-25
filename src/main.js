@@ -9,6 +9,7 @@ Vue.use(InfiniteScroll);
 
 
 Vue.prototype.$http = service;
+import '@/permission' // permission control
 import '@/assets/js/rem.js'
 
 Vue.config.productionTip = false;
