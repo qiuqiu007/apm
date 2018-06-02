@@ -152,139 +152,145 @@ export default {
     },
     getWxConfig(){
       let _this=this;
-      this.$http.get('/apm-monaco/h5/config/authConfig').then(function(res){
-        let data=res;
-        wx.config({
-          debug: false,
-          appId: data.appId,
-          timestamp: data.timestamp,
-          nonceStr: data.nonceStr,
-          signature: data.signature,
-          jsApiList: [
-            'checkJsApi',
-            'onMenuShareTimeline',
-            'onMenuShareAppMessage',
-            'onMenuShareQQ',
-            'onMenuShareWeibo',
-            'onMenuShareQZone',
-            'hideMenuItems',
-            'showMenuItems',
-            'hideAllNonBaseMenuItem',
-            'showAllNonBaseMenuItem',
-            'translateVoice',
-            'startRecord',
-            'stopRecord',
-            'onVoiceRecordEnd',
-            'playVoice',
-            'onVoicePlayEnd',
-            'pauseVoice',
-            'stopVoice',
-            'uploadVoice',
-            'downloadVoice',
-            'chooseImage',
-            'previewImage',
-            'uploadImage',
-            'downloadImage',
-            'getNetworkType',
-            'openLocation',
-            'getLocation',
-            'hideOptionMenu',
-            'showOptionMenu',
-            'closeWindow',
-            'scanQRCode',
-            'chooseWXPay',
-            'openProductSpecificView',
-            'addCard',
-            'chooseCard',
-            'openCard'
-          ]
-        });
-        console.log(wx.config);
-        wx.error(function (res) {
-          MessageBox({
-            title: '提示',
-            message: res.errMsg,
-            confirmButtonClass: 'green-confirm-btn'
+      let ua = navigator.userAgent.toLowerCase();
+      let isWeixin = ua.indexOf('micromessenger') != -1;
+      if (isWeixin) {
+        this.$http.get('/apm-monaco/h5/config/authConfig').then(function(res){
+          let data=res;
+          wx.config({
+            debug: false,
+            appId: data.appId,
+            timestamp: data.timestamp,
+            nonceStr: data.nonceStr,
+            signature: data.signature,
+            jsApiList: [
+              'checkJsApi',
+              'onMenuShareTimeline',
+              'onMenuShareAppMessage',
+              'onMenuShareQQ',
+              'onMenuShareWeibo',
+              'onMenuShareQZone',
+              'hideMenuItems',
+              'showMenuItems',
+              'hideAllNonBaseMenuItem',
+              'showAllNonBaseMenuItem',
+              'translateVoice',
+              'startRecord',
+              'stopRecord',
+              'onVoiceRecordEnd',
+              'playVoice',
+              'onVoicePlayEnd',
+              'pauseVoice',
+              'stopVoice',
+              'uploadVoice',
+              'downloadVoice',
+              'chooseImage',
+              'previewImage',
+              'uploadImage',
+              'downloadImage',
+              'getNetworkType',
+              'openLocation',
+              'getLocation',
+              'hideOptionMenu',
+              'showOptionMenu',
+              'closeWindow',
+              'scanQRCode',
+              'chooseWXPay',
+              'openProductSpecificView',
+              'addCard',
+              'chooseCard',
+              'openCard'
+            ]
           });
-        });
-        /*_this.loading=false;*/
-        wx.ready(function(){
-          wx.getLocation({
-            type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
-            success: function (res) {
-              _this.loading=false;
-              _this.latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
-              _this.longitude = res.longitude ; // 经度，浮点数，范围为180 ~ -180。
-            },
-            cancel: function (res) {
-              _this.loading=false;
-              MessageBox({
-                title: '提示',
-                message: '您拒绝授权获取地理位置!',
-                confirmButtonClass: 'green-confirm-btn'
+          console.log(wx.config);
+          wx.error(function (res) {
+            MessageBox({
+              title: '提示',
+              message: res.errMsg,
+              confirmButtonClass: 'green-confirm-btn'
+            });
+          });
+          /*_this.loading=false;*/
+          wx.ready(function(){
+            wx.getLocation({
+              type: 'gcj02', // 默认为wgs84的gps坐标，如果要返回直接给openLocation用的火星坐标，可传入'gcj02'
+              success: function (res) {
+                _this.loading=false;
+                _this.latitude = res.latitude; // 纬度，浮点数，范围为90 ~ -90
+                _this.longitude = res.longitude ; // 经度，浮点数，范围为180 ~ -180。
+              },
+              cancel: function (res) {
+                _this.loading=false;
+                MessageBox({
+                  title: '提示',
+                  message: '您拒绝授权获取地理位置!',
+                  confirmButtonClass: 'green-confirm-btn'
+                });
+              }
+            });
+            //微信分享
+            let shareImg=sessionStorage.getItem('shoplist_share_img');
+            let shareDesc=sessionStorage.getItem('shoplist_share_desc');
+            let shareTitle=sessionStorage.getItem('shoplist_share_title');
+            if(shareImg&&shareDesc&&shareTitle){
+              wx.onMenuShareTimeline({
+                title: shareTitle, // 分享标题
+                desc: shareDesc, // 分享描述
+                link: 'http://demo.code41.me/shop/', // 分享链接
+                imgUrl: shareImg, // 分享图标
+                success: function() {
+                },
+                cancel: function() {
+                }
+              });
+              wx.onMenuShareAppMessage({
+                title: shareTitle, // 分享标题
+                desc: shareDesc, // 分享描述
+                link: 'http://demo.code41.me/shop/', // 分享链接
+                imgUrl: shareImg, // 分享图标
+                success: function() {
+                },
+                cancel: function() {
+                }
+              });
+              wx.onMenuShareQQ({
+                title: shareTitle, // 分享标题
+                desc: shareDesc, // 分享描述
+                link: 'http://demo.code41.me/shop/', // 分享链接
+                imgUrl: shareImg, // 分享图标
+                success: function() {
+                },
+                cancel: function() {
+                }
+              });
+              wx.onMenuShareWeibo({
+                title: shareTitle, // 分享标题
+                desc: shareDesc, // 分享描述
+                link: 'http://demo.code41.me/shop/', // 分享链接
+                imgUrl: shareImg, // 分享图标
+                success: function() {
+                },
+                cancel: function() {
+                }
+              });
+              wx.onMenuShareQZone({
+                title: shareTitle, // 分享标题
+                desc: shareDesc, // 分享描述
+                link: 'http://demo.code41.me/shop/', // 分享链接
+                imgUrl: shareImg, // 分享图标
+                success: function() {
+                },
+                cancel: function() {
+                }
               });
             }
           });
-          //微信分享
-          let shareImg=sessionStorage.getItem('shoplist_share_img');
-          let shareDesc=sessionStorage.getItem('shoplist_share_desc');
-          let shareTitle=sessionStorage.getItem('shoplist_share_title');
-          if(shareImg&&shareDesc&&shareTitle){
-            wx.onMenuShareTimeline({
-              title: shareTitle, // 分享标题
-              desc: shareDesc, // 分享描述
-              link: 'http://demo.code41.me/shop/', // 分享链接
-              imgUrl: shareImg, // 分享图标
-              success: function() {
-              },
-              cancel: function() {
-              }
-            });
-            wx.onMenuShareAppMessage({
-              title: shareTitle, // 分享标题
-              desc: shareDesc, // 分享描述
-              link: 'http://demo.code41.me/shop/', // 分享链接
-              imgUrl: shareImg, // 分享图标
-              success: function() {
-              },
-              cancel: function() {
-              }
-            });
-            wx.onMenuShareQQ({
-              title: shareTitle, // 分享标题
-              desc: shareDesc, // 分享描述
-              link: 'http://demo.code41.me/shop/', // 分享链接
-              imgUrl: shareImg, // 分享图标
-              success: function() {
-              },
-              cancel: function() {
-              }
-            });
-            wx.onMenuShareWeibo({
-              title: shareTitle, // 分享标题
-              desc: shareDesc, // 分享描述
-              link: 'http://demo.code41.me/shop/', // 分享链接
-              imgUrl: shareImg, // 分享图标
-              success: function() {
-              },
-              cancel: function() {
-              }
-            });
-            wx.onMenuShareQZone({
-              title: shareTitle, // 分享标题
-              desc: shareDesc, // 分享描述
-              link: 'http://demo.code41.me/shop/', // 分享链接
-              imgUrl: shareImg, // 分享图标
-              success: function() {
-              },
-              cancel: function() {
-              }
-            });
-          }
+        }).catch(function(err){
+          console.log(err)
         });
-      }).catch(function(err){
-        console.log(err)
-      });
+      }else{
+        _this.loading=false;
+      }
     },
     openWxMap(item){
       console.log(item);
