@@ -76,6 +76,7 @@ export default {
       longitude:'',
       noMore:false,
       canGetPosition:false,
+      configUrl:'https://www.code41.me/shop/'
     }
   },
   watch:{
@@ -236,7 +237,7 @@ export default {
               wx.onMenuShareTimeline({
                 title: shareTitle, // 分享标题
                 desc: shareDesc, // 分享描述
-                link: 'http://demo.code41.me/shop/', // 分享链接
+                link:_this.configUrl, // 分享链接
                 imgUrl: shareImg, // 分享图标
                 success: function() {
                 },
@@ -246,7 +247,7 @@ export default {
               wx.onMenuShareAppMessage({
                 title: shareTitle, // 分享标题
                 desc: shareDesc, // 分享描述
-                link: 'http://demo.code41.me/shop/', // 分享链接
+                link:_this.configUrl, // 分享链接
                 imgUrl: shareImg, // 分享图标
                 success: function() {
                 },
@@ -256,7 +257,7 @@ export default {
               wx.onMenuShareQQ({
                 title: shareTitle, // 分享标题
                 desc: shareDesc, // 分享描述
-                link: 'http://demo.code41.me/shop/', // 分享链接
+                link:_this.configUrl, // 分享链接
                 imgUrl: shareImg, // 分享图标
                 success: function() {
                 },
@@ -266,7 +267,7 @@ export default {
               wx.onMenuShareWeibo({
                 title: shareTitle, // 分享标题
                 desc: shareDesc, // 分享描述
-                link: 'http://demo.code41.me/shop/', // 分享链接
+                link:_this.configUrl, // 分享链接
                 imgUrl: shareImg, // 分享图标
                 success: function() {
                 },
@@ -276,7 +277,7 @@ export default {
               wx.onMenuShareQZone({
                 title: shareTitle, // 分享标题
                 desc: shareDesc, // 分享描述
-                link: 'http://demo.code41.me/shop/', // 分享链接
+                link:_this.configUrl, // 分享链接
                 imgUrl: shareImg, // 分享图标
                 success: function() {
                 },
