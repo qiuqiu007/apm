@@ -314,7 +314,9 @@ export default {
     text-decoration: none;
   }
   #index-page{
-    min-height: 100%;
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     width: 7.5rem;
     margin: 0 auto;
     background-color: #061630;
