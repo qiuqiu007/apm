@@ -16,7 +16,6 @@ export default {
     height: 100%;
     padding: 0;
     margin: 0;
-    background-color: #061630;
   }
 #app {
   font-family: 'Avenir', Helvetica, Arial, sans-serif;
@@ -29,6 +28,17 @@ export default {
   overflow-y: auto;
   overflow-x: hidden;
 }
+.o-hidden{
+  overflow: hidden;
+}
+*{
+  -webkit-overflow-scrolling: touch
+}
+  ul,ul li{
+    padding: 0;
+    margin: 0;
+    list-style: none;
+  }
   .green-confirm-btn{
     color: #51C332!important;
   }

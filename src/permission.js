@@ -5,7 +5,6 @@ router.beforeEach((to, from, next) => {
   window.scrollTo(0, 0);
   service.get('/apm-monaco/h5/config/list').then(function(res){
     if(res){
-      console.log(res);
       for(let i in res){
         sessionStorage.setItem(res[i].key,res[i].url);
       }

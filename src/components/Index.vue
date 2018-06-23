@@ -36,19 +36,24 @@
             infinite-scroll-disabled="loading"
             infinite-scroll-distance="10">
             <li v-for="item in list">
-              <img src="../assets/img/adres-icon@2x.png" class="address-icon" @click="openWxMap(item)"/>
-              <div class="store-name" @click="openWxMap(item)">
-                <span class="store-item-name">{{item.name}}</span>
-                <span  class="store-distance" v-if="item.distance">{{item.distance}}公里</span>
-              </div>
-              <div class="address" @click="openWxMap(item)">
-                {{item.address}}
-              </div>
-              <a :href="'tel://'+item.phone.replace(/[^0-9]/ig,'')">
-                <div class="phone">
-                  {{item.phone}}
+              <router-link tag="div"  :to="'/detail/'+item.id">
+                <div class="store-name">
+                  <span class="store-item-name">{{item.name}}</span>
+                  <!--<span  class="store-distance">50.68公里</span>-->
+                  <span  class="store-distance" v-if="item.distance">{{item.distance}}公里</span>
                 </div>
-              </a>
+                <div class="o-hidden address-p">
+                  <div class="address">
+                    {{item.address}}
+                  </div>
+                  <div class="icon-phon-address">
+                    <span @click.stop="openPhone(item)">
+                      <img src="../assets/img/phone.png" class="address-icon" />
+                    </span>
+                    <img src="../assets/img/adres-icon@2x.png" class="address-icon" @click.stop="openWxMap(item)"/>
+                  </div>
+                </div>
+              </router-link>
             </li>
           </ul>
          <div class="no-more-data" v-show="noMore">加载完成</div>
@@ -293,6 +298,9 @@ export default {
         _this.loading=false;
       }
     },
+    openPhone(item){
+      window.location.href='tel://'+item.phone.replace(/[^0-9]/ig,'');
+    },
     openWxMap(item){
       console.log(item);
       wx.openLocation({
@@ -387,22 +395,11 @@ export default {
     padding-left: 0.02rem;
     padding-bottom: 0.26rem;
   }
-  ul,ul li{
-    padding: 0;
-    margin: 0;
-    list-style: none;
-  }
   .page-content ul li{
-    padding: 0.28rem 0.74rem 0.28rem 1.03rem;
+    padding: 0.28rem 0.38rem;
     background-color: #fff;
     margin-bottom: 0.26rem;
     position: relative;
-  }
-  .page-content li .address-icon{
-    width: 0.45rem;
-    position: absolute;
-    top: 0.28rem;
-    left: 0.42rem;
   }
   .store-name{
     overflow: hidden;
@@ -411,7 +408,7 @@ export default {
     line-height: 0.5rem;
   }
   .store-name .store-item-name{
-    width: 3.55rem;
+    width: 3.95rem;
     display: inline-block;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -421,8 +418,24 @@ export default {
     float: right;
     color: #666;
   }
+  .address-p{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
   .address{
     padding: 0.18rem 0;
+    width: 4.8rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .icon-phon-address{
+    width: 1.3rem;
+    text-align: right;
+  }
+  .icon-phon-address .address-icon{
+    height: 0.42rem;
   }
   .phone{
     color: #001a4a;
