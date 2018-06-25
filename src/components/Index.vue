@@ -88,6 +88,12 @@ export default {
 
   },
   mounted(){
+    if(sessionStorage.getItem('shopCountryId')){
+      this.country=sessionStorage.getItem('shopCountryId')
+    }
+    if(sessionStorage.getItem('shopCityId')){
+      this.city=sessionStorage.getItem('shopCityId')
+    }
     this.getWxConfig();
     this.getCountryOption();
     this.getCityOption();
@@ -123,6 +129,8 @@ export default {
     loadMore(){
       this.loading = true;
       let param='';
+      sessionStorage.setItem('shopCountryId',this.country);
+      sessionStorage.setItem('shopCityId',this.city);
       if(this.country===''&&this.city===''){
         param='pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude
       }else if(this.country!==''&&this.city===''){
