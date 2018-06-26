@@ -17,7 +17,7 @@
           <img src="../assets/img/more.png" class="arrow-icon" />
         </li>
         <li v-if="(shopInf.businessHours&&shopInf.businessHours!='')">
-          <img src="../assets/img/time.jpg" class="shop-icon" />
+          <img src="../assets/img/time3.png" class="shop-icon" />
           <span v-html="shopInf.businessHours"></span>
         </li>
       </ul>
