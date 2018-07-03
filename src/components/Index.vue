@@ -6,6 +6,9 @@
       </div>
 
       <div class="page-content">
+        <div class="nearby-p">
+          <img src="../assets/img/nearby-btn.png" @click.stop="nearShop"/>
+        </div>
         <div class="select-p">
           <div class="input-p">
             <img src="../assets/img/btn.png" class="arrow"/>
@@ -57,6 +60,7 @@
             </li>
           </ul>
          <div class="no-more-data" v-show="noMore">加载完成</div>
+          <div class="no-data" v-show="noData">该城市暂无门店</div>
         </div>
       </div>
     </div>
@@ -80,6 +84,7 @@ export default {
       latitude:'',
       longitude:'',
       noMore:false,
+      noData:false,
       canGetPosition:false,
       configUrl:'https://www.code41.me/shop/'
     }
@@ -129,15 +134,29 @@ export default {
     loadMore(){
       this.loading = true;
       let param='';
+      if(this.country===''&&this.city===''){
+        param='pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude+'&pageSize=10'
+      }else if(this.country!==''&&this.city===''){
+        param='countryId='+this.country+'&pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude+'&pageSize=10'
+      }else {
+        param='cityId='+this.city+'&lat='+this.latitude+'&lng='+this.longitude+'&pageNum='+this.pageNum+'&pageSize=10'
+      }
+      this.getDataList(param)
+    },
+    nearShop(){
+      if(this.latitude&&this.longitude){
+        this.pageNum=1;
+        this.list=[];
+        this.country='';
+        this.city='';
+        let param='pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude+'&nearShop=1';
+        this.getDataList(param);
+        this.getCityOption();
+      }
+    },
+    getDataList(param){
       sessionStorage.setItem('shopCountryId',this.country);
       sessionStorage.setItem('shopCityId',this.city);
-      if(this.country===''&&this.city===''){
-        param='pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude
-      }else if(this.country!==''&&this.city===''){
-        param='countryId='+this.country+'&pageNum='+this.pageNum+'&lat='+this.latitude+'&lng='+this.longitude
-      }else {
-        param='cityId='+this.city+'&lat='+this.latitude+'&lng='+this.longitude+'&pageNum='+this.pageNum
-      }
       let _this=this;
       this.$http.get('/apm-monaco/h5/shop/shopList?'+param).then(function(res){
         _this.pageNum++;
@@ -146,7 +165,14 @@ export default {
           _this.list=_this.list.concat(storeList);
         }
         _this.loading =res.data.end?true : false;
-        _this.noMore =res.data.end?true : false;
+        if(_this.list.length===0){
+          _this.noMore=false;
+          _this.noData=true;
+        }
+        else {
+          _this.noData=false;
+          _this.noMore =res.data.end?true : false;
+        }
       }).catch(function(err){
         console.log(err)
       });
@@ -355,22 +381,30 @@ export default {
     z-index: 99;
     color: #999;
   }
+  .nearby-p{
+    padding: 1.24rem 0.3rem 0.4rem;
+  }
+  .nearby-p img{
+    width: 100%;
+  }
   .select-p{
-    padding: 1rem 0.3rem 1.24rem;
+    padding: 0 0.3rem 1.24rem;
     overflow: hidden;
   }
   .select-p .input-p:first-child{
-    padding-right: 0.34rem;
   }
   .input-p{
     text-align: right;
     position: relative;
     float: left;
   }
+  .select-p .input-p:last-child{
+    float: right;
+  }
   .input-p .arrow{
     height: 0.2rem;
     position: absolute;
-    right: 0.56rem;
+    right: 0.1rem;
     top: 0.2rem;
   }
   select {
@@ -448,7 +482,10 @@ export default {
   .phone{
     color: #001a4a;
   }
-  .no-more-data{
+  .no-more-data,.no-data{
     text-align: center;
+  }
+  .no-data{
+    padding-top: 2rem;
   }
 </style>
